@@ -21,7 +21,11 @@ const MyBlog = () => {
   const fetchPosts = async () => {
     try {
       setError(null);
-      const response = await axios.get(`${API_URL}api/blog/`, {
+      const token = localStorage.getItem("access_token");
+      const response = await axios.get(`${API_URL}api/my/blog/`, {
+        headers: {
+            Authorization: `Bearer ${token}`, // Send token in header
+          },
         params: { search, page: currentPage },
       });
 

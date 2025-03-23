@@ -8,6 +8,7 @@ import Signup from "./Signup";
 import Login from "./Login";
 import BlogDetail from "./BlogDetail"; 
 import { AuthProvider } from "./AuthContext"; // Import AuthProvider
+import VerifyEmail  from "./VerifyEmail";
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
               <Route path="/login" element={<Login />} /> 
               <Route path="/my-blogs" element={<MyBlog />}/>
               <Route path="/post/:slug" element={<BlogDetail />} />
+              <Route path="/verify-email/:key" element={<VerifyEmail />} />
             </Routes>
           </div>
           <Footer />
