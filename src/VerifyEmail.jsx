@@ -12,7 +12,7 @@ const VerifyEmail = () => {
 
     const verifyEmail = async () => {
       try {
-        const response = await fetch("http://127.0.0.1:8000/auth/registration/verify-email/", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}auth/registration/verify-email/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ key }),

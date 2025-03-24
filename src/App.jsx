@@ -7,12 +7,14 @@ import Footer from "./Footer";
 import Signup from "./Signup";
 import Login from "./Login";
 import BlogDetail from "./BlogDetail"; 
-import { AuthProvider } from "./AuthContext"; // Import AuthProvider
-import VerifyEmail  from "./VerifyEmail";
+import { AuthProvider } from "./AuthContext";
+import VerifyEmail from "./VerifyEmail";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword"; // ✅ Import ResetPassword
 
 const App = () => {
   return (
-    <AuthProvider> {/* ✅ Wrap the whole app inside AuthProvider */}
+    <AuthProvider>
       <Router>
         <div className="d-flex flex-column min-vh-100">
           <Navbar />
@@ -20,10 +22,12 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Blog />} />
               <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} /> 
-              <Route path="/my-blogs" element={<MyBlog />}/>
+              <Route path="/login" element={<Login />} />
+              <Route path="/my-blogs" element={<MyBlog />} />
               <Route path="/post/:slug" element={<BlogDetail />} />
               <Route path="/verify-email/:key" element={<VerifyEmail />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:uid/:token" element={<ResetPassword />} /> {/* ✅ Added Reset Password Route */}
             </Routes>
           </div>
           <Footer />

@@ -4,7 +4,7 @@ import { AuthContext } from "./AuthContext"; // ✅ Import AuthContext
 import { Modal, Button, Form, Container, Row, Col, Spinner } from "react-bootstrap";
 
 const Login = () => {
-  const { login } = useContext(AuthContext); // ✅ Use login function from context
+  const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
@@ -34,7 +34,7 @@ const Login = () => {
         setIsSuccess(true);
         setShowModal(true);
 
-        login(data.user, data.access); // ✅ Updates auth state immediately
+        login(data.user, data.access);
 
         setTimeout(() => navigate("/"), 2000);
       } else {
@@ -65,6 +65,16 @@ const Login = () => {
               <Form.Label>Password</Form.Label>
               <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} required />
             </Form.Group>
+
+            <div className="d-flex justify-content-between mb-3">
+              <span 
+                className="text-primary" 
+                style={{ cursor: "pointer", textDecoration: "underline" }} 
+                onClick={() => navigate("/forgot-password")}
+              >
+                Forgot Password?
+              </span>
+            </div>
 
             <Button variant="primary" type="submit" className="w-100" disabled={loading}>
               {loading ? <Spinner as="span" animation="border" size="sm" /> : "Login"}
