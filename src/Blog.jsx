@@ -10,27 +10,31 @@ const Blog = () => {
   const [posts, setPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [search, setSearch] = useState("");
+  const [nextPage, setNextPage] = useState(null);
+  const [prevPage, setPrevPage] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchPosts();
+    fetchPosts(`${API_URL}api/blog/?page=${currentPage}`);
   }, [search, currentPage]);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (url) => {
     try {
       setError(null);
-      const response = await axios.get(`${API_URL}api/blog/`, {
-        params: { search, page: currentPage },
-      });
+      const response = await axios.get(url, { params: { search } });
 
       if (!response.data.results) {
         throw new Error("Invalid API response format");
       }
 
       setPosts(response.data.results);
-      setTotalPages(Math.ceil(response.data.count / response.data.results.length));
+      setNextPage(response.data.next);
+      setPrevPage(response.data.previous);
+
+      // Extract page number from "next" or "previous" URL
+      const urlParams = new URLSearchParams(new URL(url).search);
+      setCurrentPage(parseInt(urlParams.get("page")) || 1);
     } catch (err) {
       console.error("Error fetching posts:", err);
       setError("Failed to load blog posts. Please try again.");
@@ -43,7 +47,17 @@ const Blog = () => {
 
   const handleSearchSubmit = () => {
     setSearch(searchQuery);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  const handleReadMore = async (slug) => {
+    try {
+      await axios.get(`${API_URL}api/blog/views/${slug}/`);
+      window.location.href = `/post/${slug}`; // Redirect after updating views
+    } catch (error) {
+      console.error("Error updating views:", error);
+      window.location.href = `/post/${slug}`; // Still navigate even if API fails
+    }
   };
 
   return (
@@ -81,7 +95,7 @@ const Blog = () => {
                 </div>
 
                 <p className="text-muted small">
-                  By <strong>{post.author}</strong> 
+                  By <strong>{post.author}</strong>
                 </p>
 
                 {/* Icons Row - Fixed Position */}
@@ -98,10 +112,11 @@ const Blog = () => {
                 </div>
 
                 <div className="read-more-container">
-                  <a href={`/post/${post.slug}`} className="purple-button">
+                  <button onClick={() => handleReadMore(post.slug)} className="purple-button">
                     Read More
-                  </a>
+                  </button>
                 </div>
+
               </div>
             </div>
           ))
@@ -111,35 +126,28 @@ const Blog = () => {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="text-center mt-4">
+      <div className="text-center mt-4">
+        {prevPage && (
           <button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() => fetchPosts(prevPage)}
             className="btn btn-secondary mx-2"
           >
             Previous
           </button>
+        )}
 
-          {[...Array(totalPages)].map((_, index) => (
-            <button
-              key={index + 1}
-              onClick={() => setCurrentPage(index + 1)}
-              className={`btn mx-1 ${currentPage === index + 1 ? "btn-primary" : "btn-outline-secondary"}`}
-            >
-              {index + 1}
-            </button>
-          ))}
+        {/* Show Current Page */}
+        <span className="mx-3" style={{ color: "purple", fontWeight: "bold" }}>Page {currentPage}</span>
 
+        {nextPage && (
           <button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            onClick={() => fetchPosts(nextPage)}
             className="btn btn-secondary mx-2"
           >
             Next
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };

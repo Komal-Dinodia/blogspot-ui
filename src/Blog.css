@@ -34,7 +34,7 @@
 }
 
 .purple-button:hover {
-  background-color: white;
+  background-color: #782499;
   color: white;
 }
 
@@ -71,7 +71,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp:2;
   -webkit-box-orient: vertical;
   cursor: pointer;
 }
