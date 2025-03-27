@@ -29,13 +29,13 @@ const ResetPassword = () => {
 
       if (response.ok) {
         setMessage("Password reset successful! Redirecting to login...");
-        setTimeout(() => navigate("/login"), 3000); // ✅ Redirect after 3s
+        setTimeout(() => navigate("/login"), 3000); //qRedirect after 3s
       } else {
         setError(
           data.new_password1?.[0] || 
           data.new_password2?.[0] || 
           data.non_field_errors?.[0] || 
-          "Something went wrong! Please try again."
+          data.error
         );
       }
     } catch (error) {
@@ -60,7 +60,7 @@ const ResetPassword = () => {
               value={newPassword1}
               onChange={(e) => setNewPassword1(e.target.value)}
               required
-              disabled={message !== null} // ✅ Disable after success
+              disabled={message !== null} //  Disable after success
             />
           </Form.Group>
 
@@ -71,7 +71,7 @@ const ResetPassword = () => {
               value={newPassword2}
               onChange={(e) => setNewPassword2(e.target.value)}
               required
-              disabled={message !== null} // ✅ Disable after success
+              disabled={message !== null} // Disable after success
             />
           </Form.Group>
 
@@ -79,7 +79,7 @@ const ResetPassword = () => {
             variant="primary"
             type="submit"
             className="w-100"
-            disabled={loading || message !== null} // ✅ Disable button after success
+            disabled={loading || message !== null} // Disable button after success
           >
             {loading ? <Spinner as="span" animation="border" size="sm" /> : "Reset Password"}
           </Button>

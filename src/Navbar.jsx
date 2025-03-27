@@ -9,27 +9,28 @@ const Navbar = () => {
 
   return (
     <nav className="navbar navbar-expand-lg custom-navbar">
-      <div className="container" style={{ maxWidth: "900px", height: "50px", padding: "20px" }}>
+      <div className="container" style={{ maxWidth: "900px", height: "50px", padding: "10px" }}>
         <a className="navbar-brand d-flex align-items-center" href="/">
           <img src="/logo.png" alt="Logo" width="60" height="40" className="me-2" />
           <span>BlogSpot</span>
         </a>
 
         <div className="ms-auto d-flex align-items-center">
-        {user && (
+          {user && (
             <>
               {/* My Blogs Button */}
-              <button 
-                className="btn btn-outline-primary me-3" 
+              <button
+                className="btn btn-outline-primary me-3"
                 onClick={() => navigate("/my-blogs")}
               >
                 My Blogs
               </button>
 
               {/* Write Button */}
-              <button 
-                className="btn btn-outline-primary me-3" 
+              <button
+                className="btn btn-outline-primary me-3"
                 onClick={() => navigate("/write")}
+
               >
                 Write
               </button>
@@ -44,18 +45,24 @@ const Navbar = () => {
                 style={{ width: "40px", height: "40px", cursor: "pointer" }}
                 onClick={() => setShowLogout(!showLogout)}
               >
-                <span className="text-white">{user.first_name.charAt(0)}</span>
+                <span className="text-white">{user.first_name.charAt(0).toUpperCase()}</span>
+
               </div>
 
               {/* User Name */}
-              <span className="ms-2">{user.first_name}</span>
+              <span className="ms-2">{user.username}</span>
 
               {/* Logout Button (Visible on Click) */}
               {showLogout && (
-                <button className="btn btn-danger ms-3" onClick={logout}>
+                <button className="btn btn-danger ms-3" onClick={() => {
+                  logout();
+                  navigate("/");
+                }}>
                   Logout
                 </button>
               )}
+
+
             </div>
           ) : (
             <>

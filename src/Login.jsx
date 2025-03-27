@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "./AuthContext"; // ✅ Import AuthContext
+import { AuthContext } from "./AuthContext"; // Import AuthContext
 import { Modal, Button, Form, Container, Row, Col, Spinner } from "react-bootstrap";
 
 const Login = () => {
@@ -20,7 +20,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}auth/login/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -66,23 +66,24 @@ const Login = () => {
               <Form.Control type="password" name="password" value={formData.password} onChange={handleChange} required />
             </Form.Group>
 
-            <div className="d-flex justify-content-between mb-3">
-              <span 
-                className="text-primary" 
-                style={{ cursor: "pointer", textDecoration: "underline" }} 
+            <div className="d-flex justify-content-center mb-3">
+              <span
+                className="text-primary text-center"
+                style={{ cursor: "pointer", textDecoration: "underline" }}
                 onClick={() => navigate("/forgot-password")}
               >
-                Forgot Password?
+                Reset or Forgot Password?
               </span>
             </div>
 
-            <Button variant="primary" type="submit" className="w-100" disabled={loading}>
+
+            <Button variant="primary" type="submit" className="w-100 purple-button" disabled={loading}>
               {loading ? <Spinner as="span" animation="border" size="sm" /> : "Login"}
             </Button>
           </Form>
 
           <div className="text-center mt-3">
-            <span>No account? </span>
+            <span style={{ color: "black" }}>No account? </span>
             <span className="text-primary" style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => navigate("/signup")}>
               Create One
             </span>

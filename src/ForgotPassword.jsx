@@ -57,10 +57,10 @@ const ForgotPassword = () => {
           <Button 
             variant="primary" 
             type="submit" 
-            className="w-100" 
+            className="w-100 purple-button" 
             disabled={loading || message !== null} // Disable button after success
           >
-            {loading ? <Spinner as="span" animation="border" size="sm" /> : "Send Reset Link"}
+            {loading ? <Spinner as="span" animation="border" size="sm"/> : "Send Reset Link"}
           </Button>
         </Form>
 

@@ -14,6 +14,7 @@ h1 {
 .card:hover {
   transform: scale(1.05);
 }
+
 html, body {
   height: 100%;
 }
@@ -21,6 +22,7 @@ html, body {
 .container {
   padding-bottom: 50px; /* Creates space before the footer */
 }
+
 .custom-navbar {
   background-color: #782499 !important; /* Change navbar color */
   padding: 10px 0;
@@ -30,18 +32,41 @@ html, body {
   border-radius: 50%; /* Make logo rounded */
 }
 
-.navbar-nav .nav-link {
+.navbar-nav .nav-link, .btn {
   color: white !important;
   font-weight: bold;
+  border: none !important;
 }
 
-.navbar-nav .nav-link:hover {
+.navbar-nav .nav-link:hover, .btn:hover {
   color: #ffcc00 !important; /* Change color on hover */
 }
 
-span{
+span {
   color: white;
 }
-.text-center mt-3{
+
+.text-center.mt-3 {
   color: black;
 }
+
+/* Responsive Navbar */
+@media (max-width: 768px-992px) {
+  .navbar-toggler {
+    border: none;
+    height: max-content;
+  }
+  .navbar-collapse {
+    background-color: #782499;
+    padding: 10px;
+    text-align: center;
+  }
+  .navbar-nav .nav-item {
+    margin-bottom: 10px;
+  }
+  .d-flex {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+

@@ -6,11 +6,11 @@ import "bootstrap/dist/css/bootstrap.min.css";
 const API_URL = import.meta.env.VITE_API_URL;
 
 const BlogDetail = () => {
-  const { slug } = useParams(); // Get slug from URL
+  const { slug } = useParams(); 
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [user, setUser] = useState(null); // Store logged-in user details
+  const [user, setUser] = useState(null); 
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [commentError, setCommentError] = useState(null);
@@ -28,7 +28,7 @@ const BlogDetail = () => {
       setLoading(true);
 
       const response = await axios.get(`${API_URL}api/blog/${slug}/`, {
-        withCredentials: true, // Ensures cookies (like session ID, CSRF token) are sent
+        withCredentials: true,
       });
 
       setPost(response.data);
@@ -55,7 +55,9 @@ const BlogDetail = () => {
   const checkUser = () => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      console.log("Logged-in user:", parsedUser); // Debugging
+      setUser(parsedUser);
     }
   };
 
@@ -82,6 +84,21 @@ const BlogDetail = () => {
     } catch (err) {
       console.error("Error posting comment:", err);
       setCommentError("Failed to post comment. Please try again.");
+    }
+  };
+
+  // Handle deleting a comment
+  const handleDeleteComment = async (commentId) => {
+    try {
+      await axios.delete(`${API_URL}api/blog/delete/comment/${commentId}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+
+      fetchComments(); // Refresh comments list
+    } catch (err) {
+      console.error("Error deleting comment:", err);
     }
   };
 
@@ -132,11 +149,37 @@ const BlogDetail = () => {
         {/* Display Comments */}
         {comments.length > 0 ? (
           <ul className="list-group">
-            {comments.map((comment, index) => (
-              <li key={index} className="list-group-item">
-                <strong>{comment.user}:</strong> {comment.comment}
-              </li>
-            ))}
+            {comments.map((comment) => {
+              console.log("Comment User:", comment.user, "Logged-in User:", user?.username);
+
+              return (
+                <li key={comment.id} className="list-group-item d-flex justify-content-between align-items-center">
+                  <div>
+                    <strong>{comment.user}:</strong> {comment.comment}
+                    <br />
+                    <small className="text-muted">
+                      {new Date(comment.created_at).toLocaleString("en-IN", {
+                        timeZone: "Asia/Kolkata",
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        second: "2-digit",
+                        hour12: true,
+                      })}
+                    </small>
+                  </div>
+
+                  {/* Show delete button only if the comment belongs to the logged-in user */}
+                  {user && comment.user === user.username && (
+                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment.id)}>
+                      🗑️ Delete
+                    </button>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="text-muted">No comments yet. Be the first to comment!</p>

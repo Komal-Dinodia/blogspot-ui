@@ -18,13 +18,31 @@ const Signup = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [passwordMatch, setPasswordMatch] = useState(true);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    // Live password match check
+    if (name === "password1" || name === "password2") {
+      setPasswordMatch(
+        name === "password2" ? value === formData.password1 : value === formData.password2
+      );
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Check if passwords match before submitting
+    if (!passwordMatch || formData.password1 === "" || formData.password2 === "") {
+      setIsSuccess(false);
+      setModalMessage("Passwords do not match.");
+      setShowModal(true);
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_URL}auth/registration/`, {
@@ -81,12 +99,29 @@ const Signup = () => {
 
             <Form.Group className="mb-3">
               <Form.Label>Password</Form.Label>
-              <Form.Control type="password" name="password1" value={formData.password1} onChange={handleChange} required />
+              <Form.Control
+                type="password"
+                name="password1"
+                value={formData.password1}
+                onChange={handleChange}
+                required
+                isInvalid={!passwordMatch && formData.password2.length > 0}
+              />
             </Form.Group>
 
             <Form.Group className="mb-3">
               <Form.Label>Confirm Password</Form.Label>
-              <Form.Control type="password" name="password2" value={formData.password2} onChange={handleChange} required />
+              <Form.Control
+                type="password"
+                name="password2"
+                value={formData.password2}
+                onChange={handleChange}
+                required
+                isInvalid={!passwordMatch && formData.password2.length > 0}
+              />
+              <Form.Control.Feedback type="invalid">
+                Passwords do not match.
+              </Form.Control.Feedback>
             </Form.Group>
 
             <Form.Group className="mb-3">

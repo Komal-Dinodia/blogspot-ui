@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Form, Button, Container, Spinner } from "react-bootstrap";
 
@@ -13,13 +13,51 @@ const Write = () => {
   const [message, setMessage] = useState(null);
   const accessToken = localStorage.getItem("access_token");
 
-  // Redirect if not logged in
-  if (!accessToken) {
-    navigate("/login");
-    return null;
-  }
+  useEffect(() => {
+    if (!accessToken) {
+      navigate("/login");
+      return;
+    }
 
-  // Handle form input change
+    const style = document.createElement("style");
+    style.innerHTML = `
+      .cke_notification_warning {
+        display: none !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    const script = document.createElement("script");
+    script.src = "https://cdn.ckeditor.com/4.21.0/full/ckeditor.js";
+    script.async = true;
+    script.onload = () => {
+      if (window.CKEDITOR) {
+        window.CKEDITOR.replace("editor", {
+          removePlugins: "resize",
+          toolbar: [
+            ["Styles", "Format"],
+            ["Bold", "Italic", "Underline", "Strike"],
+            ["Undo", "Redo"],
+            ["Link", "Unlink"],
+            ["Image", "Table"],
+            ["NumberedList", "BulletedList"],
+            ["Source"],
+          ],
+          height: 300,
+        });
+
+        window.CKEDITOR.instances.editor.on("change", function () {
+          setFormData((prevData) => ({
+            ...prevData,
+            description: window.CKEDITOR.instances.editor.getData(),
+          }));
+        });
+      }
+    };
+
+    document.body.appendChild(script);
+  }, [accessToken, navigate]);
+
   const handleChange = (e) => {
     if (e.target.name === "image") {
       setFormData({ ...formData, image: e.target.files[0] });
@@ -28,7 +66,6 @@ const Write = () => {
     }
   };
 
-  // Handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -41,7 +78,7 @@ const Write = () => {
     }
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}api/posts/`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}api/create/blog/`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -54,7 +91,7 @@ const Write = () => {
 
       if (response.status === 201) {
         setMessage({ type: "success", text: "Post created successfully!" });
-        setTimeout(() => navigate("/"), 2000); // Redirect after success
+        setTimeout(() => navigate("/my-blogs"), 2000);
       } else {
         setMessage({ type: "error", text: data.detail || "Failed to create post." });
       }
@@ -68,7 +105,7 @@ const Write = () => {
     <Container className="mt-5">
       <h2 className="text-center mb-4">Create a New Post</h2>
       {message && <p className={`text-${message.type === "success" ? "success" : "danger"}`}>{message.text}</p>}
-      
+
       <Form onSubmit={handleSubmit} className="p-4 shadow-lg rounded bg-light">
         <Form.Group className="mb-3">
           <Form.Label>Title</Form.Label>
@@ -82,27 +119,16 @@ const Write = () => {
         </Form.Group>
 
         <Form.Group className="mb-3">
-          <Form.Label>Description</Form.Label>
-          <Form.Control
-            as="textarea"
-            name="description"
-            value={formData.description}
-            onChange={handleChange}
-            rows={5}
-            required
-          />
+          <Form.Label>Description:</Form.Label>
+          <textarea id="editor" name="description"></textarea>
         </Form.Group>
 
         <Form.Group className="mb-3">
           <Form.Label>Upload Image</Form.Label>
-          <Form.Control
-            type="file"
-            name="image"
-            onChange={handleChange}
-          />
+          <Form.Control type="file" name="image" onChange={handleChange} />
         </Form.Group>
 
-        <Button variant="primary" type="submit" className="w-100" disabled={loading}>
+        <Button variant="primary" type="submit" className="w-100 purple-button" disabled={loading}>
           {loading ? <Spinner as="span" animation="border" size="sm" /> : "Publish Post"}
         </Button>
       </Form>
@@ -111,3 +137,4 @@ const Write = () => {
 };
 
 export default Write;
+
