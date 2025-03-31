@@ -93,7 +93,7 @@ const Write = () => {
         setMessage({ type: "success", text: "Post created successfully!" });
         setTimeout(() => navigate("/my-blogs"), 2000);
       } else {
-        setMessage({ type: "error", text: data.detail || "Failed to create post." });
+        setMessage({ type: "error", text: data.title || `Description: ${data.description}` || "Failed to create post." });
       }
     } catch (error) {
       setLoading(false);
@@ -120,7 +120,7 @@ const Write = () => {
 
         <Form.Group className="mb-3">
           <Form.Label>Description:</Form.Label>
-          <textarea id="editor" name="description"></textarea>
+          <textarea id="editor" name="description" required></textarea>
         </Form.Group>
 
         <Form.Group className="mb-3">

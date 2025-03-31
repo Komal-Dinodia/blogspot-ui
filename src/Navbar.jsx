@@ -1,11 +1,13 @@
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "./AuthContext";
+import ChangePasswordModal from "./ChangePasswordModal"; // Import new component
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { user, logout } = useContext(AuthContext); // Get auth state
+  const { user, logout } = useContext(AuthContext);
   const [showLogout, setShowLogout] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false); // Toggle modal
 
   return (
     <nav className="navbar navbar-expand-lg custom-navbar">
@@ -18,20 +20,10 @@ const Navbar = () => {
         <div className="ms-auto d-flex align-items-center">
           {user && (
             <>
-              {/* My Blogs Button */}
-              <button
-                className="btn btn-outline-primary me-3"
-                onClick={() => navigate("/my-blogs")}
-              >
+              <button className="btn btn-outline-primary me-3" onClick={() => navigate("/my-blogs")}>
                 My Blogs
               </button>
-
-              {/* Write Button */}
-              <button
-                className="btn btn-outline-primary me-3"
-                onClick={() => navigate("/write")}
-
-              >
+              <button className="btn btn-outline-primary me-3" onClick={() => navigate("/write")}>
                 Write
               </button>
             </>
@@ -39,30 +31,25 @@ const Navbar = () => {
 
           {user ? (
             <div className="d-flex align-items-center position-relative">
-              {/* Profile Circle */}
               <div
                 className="rounded-circle bg-secondary d-flex justify-content-center align-items-center"
                 style={{ width: "40px", height: "40px", cursor: "pointer" }}
                 onClick={() => setShowLogout(!showLogout)}
               >
                 <span className="text-white">{user.first_name.charAt(0).toUpperCase()}</span>
-
               </div>
-
-              {/* User Name */}
               <span className="ms-2">{user.username}</span>
 
-              {/* Logout Button (Visible on Click) */}
               {showLogout && (
-                <button className="btn btn-danger ms-3" onClick={() => {
-                  logout();
-                  navigate("/");
-                }}>
-                  Logout
-                </button>
+                <div className="d-flex flex-row ms-3">
+                  <button className="btn btn-danger mt-3 mb-3 m-1" onClick={() => { logout(); navigate("/"); }}>
+                    Logout
+                  </button>
+                  <button className="btn mt-3 mb-3 custom-btn" onClick={() => setShowChangePassword(true)}>
+                    Change Password
+                  </button>
+                </div>
               )}
-
-
             </div>
           ) : (
             <>
@@ -76,6 +63,9 @@ const Navbar = () => {
           )}
         </div>
       </div>
+
+      {/* Render Change Password Modal */}
+      {showChangePassword && <ChangePasswordModal onClose={() => setShowChangePassword(false)} />}
     </nav>
   );
 };

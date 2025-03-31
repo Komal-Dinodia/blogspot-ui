@@ -1,16 +1,20 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "./AuthContext"; // Import AuthContext
-import { Modal, Button, Form, Container, Row, Col, Spinner } from "react-bootstrap";
+import { AuthContext } from "./AuthContext"; 
+import { Button, Form, Container, Row, Col, Spinner } from "react-bootstrap";
 
 const Login = () => {
   const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
-  const [showModal, setShowModal] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [isSuccess, setIsSuccess] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (token) {
+      navigate("/"); // Redirect to home if token exists
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -30,23 +34,14 @@ const Login = () => {
       setLoading(false);
 
       if (response.status === 200) {
-        setModalMessage("Login Successful! Redirecting...");
-        setIsSuccess(true);
-        setShowModal(true);
-
         login(data.user, data.access);
-
-        setTimeout(() => navigate("/"), 2000);
+        navigate("/");
       } else {
-        setModalMessage(data.non_field_errors?.[0] || "Login failed. Please try again.");
-        setIsSuccess(false);
-        setShowModal(true);
+        alert(data.non_field_errors?.[0] || "Login failed. Please try again.");
       }
     } catch (error) {
       setLoading(false);
-      setModalMessage("Something went wrong! Please try again later.");
-      setIsSuccess(false);
-      setShowModal(true);
+      alert("Something went wrong! Please try again later.");
     }
   };
 
@@ -76,33 +71,25 @@ const Login = () => {
               </span>
             </div>
 
-
-            <Button variant="primary" type="submit" className="w-100 purple-button" disabled={loading}>
+            <Button variant="primary" type="submit" className="w-100" disabled={loading}>
               {loading ? <Spinner as="span" animation="border" size="sm" /> : "Login"}
             </Button>
-          </Form>
 
-          <div className="text-center mt-3">
-            <span style={{ color: "black" }}>No account? </span>
-            <span className="text-primary" style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => navigate("/signup")}>
-              Create One
-            </span>
-          </div>
+            <div className="text-center mt-3">
+              <span style={{ color: "black" }}>No account? </span>
+              <span className="text-primary" style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => navigate("/signup")}>
+                Create One
+              </span>
+            </div>
+
+            <div className="text-center mt-3">
+              <Button variant="link" onClick={() => navigate("/resend-verification")}>
+                Resend Verification Email
+              </Button>
+            </div>
+          </Form>
         </Col>
       </Row>
-
-      {/* Modal */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} centered>
-        <Modal.Header closeButton className={isSuccess ? "border-success" : "border-danger"}>
-          <Modal.Title>{isSuccess ? "Success" : "Error"}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="text-center">
-          <p className={isSuccess ? "text-success" : "text-danger"}>{modalMessage}</p>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Close</Button>
-        </Modal.Footer>
-      </Modal>
     </Container>
   );
 };

@@ -12,6 +12,7 @@ import { AuthProvider } from "./AuthContext";
 import VerifyEmail from "./VerifyEmail";
 import ForgotPassword from "./ForgotPassword";
 import ResetPassword from "./ResetPassword"; // Import ResetPassword
+import ResendVerification from "./ResendVerification";
 
 const App = () => {
   return (
@@ -24,6 +25,7 @@ const App = () => {
               <Route path="/" element={<Blog />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/resend-verification" element={<ResendVerification />} />
               <Route path="/write" element={<Write />} />
               <Route path="/my-blogs" element={<MyBlog />} />
               <Route path="/post/:slug" element={<BlogDetail />} />

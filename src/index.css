@@ -69,4 +69,7 @@ span {
     align-items: center;
   }
 }
-
+.custom-btn {
+  background-color: #f1ce06e5; 
+  color: white; 
+}
