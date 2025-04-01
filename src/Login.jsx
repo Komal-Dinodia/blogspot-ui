@@ -71,7 +71,7 @@ const Login = () => {
               </span>
             </div>
 
-            <Button variant="primary" type="submit" className="w-100" disabled={loading}>
+            <Button variant="primary" type="submit" className="w-100 purple-button" disabled={loading}>
               {loading ? <Spinner as="span" animation="border" size="sm" /> : "Login"}
             </Button>
 
@@ -82,9 +82,9 @@ const Login = () => {
               </span>
             </div>
 
-            <div className="text-center mt-3">
-              <Button variant="link" onClick={() => navigate("/resend-verification")}>
-                Resend Verification Email
+            <div className="text-center mt-3 ">
+              <Button variant="link" onClick={() => navigate("/resend-verification")} >
+                <span style={{ color: "black", textDecoration: "underline" ,fontWeight: "normal"}}>Resend Verification Email</span>
               </Button>
             </div>
           </Form>

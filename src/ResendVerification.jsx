@@ -60,7 +60,7 @@ const ResendVerification = () => {
               <Form.Control type="email" value={email} onChange={handleChange} required />
             </Form.Group>
 
-            <Button variant="primary" type="submit" className="w-100" disabled={loading}>
+            <Button variant="primary" type="submit" className="w-100 purple-button" disabled={loading}>
               {loading ? <Spinner as="span" animation="border" size="sm" /> : "Resend Email"}
             </Button>
 
