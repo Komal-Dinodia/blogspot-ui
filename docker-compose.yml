@@ -1,21 +1,14 @@
 version: '3.8'
 
 services:
-  app:
+  frontend:
     build: .
     container_name: blogspot-ui-frontend
     ports:
-      - "5003:5003"  # Map port 5003 of the container to port 80 on the host on
+      - "5003:5003"  # Map container's Vite dev server port to host
     volumes:
-      - .:/app  # Mount the current directory to /app in the container
+      - .:/app  # Mount local directory for live reload
+      - /app/node_modules  # Prevent overwriting node_modules
     environment:
-      - NODE_ENV=development  # Set any environment variables your app needs
-
-  # You can add more services here, like a database if required
-  # db:
-  #   image: mysql:8.0
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: examplepassword
-  #     MYSQL_DATABASE: blogspot
-  #   ports:
-  #     - "3306:3306"
+      - NODE_ENV=development
+    command: ["npm", "run", "dev", "--", "--host"]
