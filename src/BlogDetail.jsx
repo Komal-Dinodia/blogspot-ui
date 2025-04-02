@@ -120,7 +120,6 @@ const BlogDetail = () => {
       <div dangerouslySetInnerHTML={{ __html: post.description }} className="blog-content" />
 
       <div className="d-flex justify-content-between mt-3">
-        <span className="text-muted"><strong>Likes:</strong> {post.likes}</span>
         <span className="text-muted"><strong>Views:</strong> {post.views}</span>
         <span className="text-muted"><strong>Comments:</strong> {comments.length}</span>
       </div>

@@ -138,7 +138,7 @@ const MyBlog = () => {
                 <h5 className="blog-title">{post.title}</h5>
                 <p className="text-muted small">By <strong>{post.author}</strong></p>
                 <div className="icons-row">
-                  <span className="text-muted"><FaHeart className="text-danger" /> {post.likes ?? 0}</span>
+                  <span className="text-muted"><FaHeart className="text-danger" /></span>
                   <span className="text-muted"><FaEye className="text-primary" /> {post.views ?? 0}</span>
                   <span className="text-muted"><FaComment className="text-success" /> {post.comment_count ?? 0}</span>
                 </div>
