@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    container_name: blogspot-ui
+    ports:
+      - "5003:5003"  # Map port 3000 of the container to port 3000 on the host
+    volumes:
+      - .:/app  # Mount the current directory to /app in the container
+    environment:
+      - NODE_ENV=development  # Set any environment variables your app needs
+
+  # You can add more services here, like a database if required
+  # db:
+  #   image: mysql:8.0
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: examplepassword
+  #     MYSQL_DATABASE: blogspot
+  #   ports:
+  #     - "3306:3306"
