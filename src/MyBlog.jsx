@@ -31,7 +31,7 @@ const MyBlog = () => {
         headers: { Authorization: `Bearer ${token}` },
         params: { search },
       });
-      
+
       if (!response.data.results) {
         throw new Error("Invalid API response format");
       }
@@ -43,6 +43,10 @@ const MyBlog = () => {
       console.error("Error fetching posts:", err);
       setError("Failed to load blog posts. Please try again.");
     }
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
   };
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
@@ -151,16 +155,20 @@ const MyBlog = () => {
         )}
       </div>
 
-      {editPost && (
-        <div className="edit-modal">
-          <h4>Edit Blog</h4>
-          <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="form-control mb-2" />
-          <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="form-control mb-2" />
-          <input type="file" onChange={handleImageChange} className="form-control mb-2" />
-          <button onClick={handleEditSubmit} className="btn btn-success">Save Changes</button>
-          <button onClick={() => setEditPost(null)} className="btn btn-secondary mx-2">Cancel</button>
-        </div>
-      )}
+      {/* Pagination Controls */}
+      <div className="text-center mt-4">
+        {prevPage && (
+          <button onClick={() => handlePageChange(currentPage - 1)} className="btn btn-secondary mx-2">
+            Previous
+          </button>
+        )}
+        <span className="mx-3" style={{ color: "purple", fontWeight: "bold" }}>Page {currentPage}</span>
+        {nextPage && (
+          <button onClick={() => handlePageChange(currentPage + 1)} className="btn btn-secondary mx-2">
+            Next
+          </button>
+        )}
+      </div>
     </div>
   );
 };
