@@ -26,6 +26,6 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Expose port 5003
 EXPOSE 5003
-
+#add again
 # Start the NGINX server
 CMD ["nginx", "-g", "daemon off;"]

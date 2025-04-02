@@ -5,7 +5,7 @@ services:
     build: .
     container_name: blogspot-ui-frontend
     ports:
-      - "5003:80"  # Map port 5003 of the container to port 80 on the host
+      - "5003:80"  # Map port 5003 of the container to port 80 on the host on
     volumes:
       - .:/app  # Mount the current directory to /app in the container
     environment:
