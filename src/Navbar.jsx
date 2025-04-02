@@ -11,8 +11,8 @@ const Navbar = () => {
 
   return (
     <nav className="navbar navbar-expand-lg custom-navbar">
-      <div className="container" style={{ maxWidth: "900px", height: "50px", padding: "10px" }}>
-        <a className="navbar-brand d-flex align-items-center" href="/">
+      <div className="container" style={{ maxWidth: "100%", height: "50px", padding: "10px" }}>
+        <a className="navbar-brand d-flex align-items-center" href="/" >
           <img src="/logo.png" alt="Logo" width="60" height="40" className="me-2" />
           <span>BlogSpot</span>
         </a>

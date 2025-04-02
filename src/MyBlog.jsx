@@ -17,6 +17,7 @@ const MyBlog = () => {
   const [editPost, setEditPost] = useState(null);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
+  const [editImage, setEditImage] = useState(null);
 
   useEffect(() => {
     fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
@@ -30,7 +31,7 @@ const MyBlog = () => {
         headers: { Authorization: `Bearer ${token}` },
         params: { search },
       });
-
+      
       if (!response.data.results) {
         throw new Error("Invalid API response format");
       }
@@ -44,10 +45,7 @@ const MyBlog = () => {
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
+  const handleSearchChange = (e) => setSearchQuery(e.target.value);
   const handleSearchSubmit = () => {
     setSearch(searchQuery);
     setCurrentPage(1);
@@ -69,16 +67,26 @@ const MyBlog = () => {
     setEditDescription(post.description);
   };
 
+  const handleImageChange = (e) => setEditImage(e.target.files[0]);
+
   const handleEditSubmit = async () => {
     if (!editPost) return;
 
     try {
       const token = localStorage.getItem("access_token");
-      await axios.put(
-        `${API_URL}blog/edit-delete/${editPost.slug}/`,
-        { title: editTitle, description: editDescription },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const formData = new FormData();
+      formData.append("title", editTitle);
+      formData.append("description", editDescription);
+      if (editImage) {
+        formData.append("image", editImage);
+      }
+
+      await axios.put(`${API_URL}blog/edit-delete/${editPost.slug}/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       setEditPost(null);
       fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
@@ -110,61 +118,30 @@ const MyBlog = () => {
 
       {error && <div className="alert alert-danger text-center">{error}</div>}
 
-      {/* Search Bar */}
       <div className="mb-4 d-flex justify-content-center">
         <div className="input-group w-50">
-          <input
-            type="text"
-            placeholder="Search by title..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="form-control"
-          />
-          <button className="btn btn-primary purple-button" onClick={handleSearchSubmit}>
-            Search
-          </button>
+          <input type="text" placeholder="Search by title..." value={searchQuery} onChange={handleSearchChange} className="form-control" />
+          <button className="btn btn-primary purple-button" onClick={handleSearchSubmit}>Search</button>
         </div>
       </div>
 
-      {/* Blog Grid Layout */}
       <div className="grid-container">
         {posts.length > 0 ? (
           posts.map((post) => (
             <div key={post.slug} className="blog-card">
               <img src={post.image} alt={post.title} className="blog-img" />
               <div className="blog-content">
-                <div className="blog-title-container">
-                  <h5 className="blog-title">{post.title}</h5>
-                  <span className="tooltip-text">{post.title}</span>
-                </div>
-
-                <p className="text-muted small">
-                  By <strong>{post.author}</strong>
-                </p>
-
-                {/* Icons */}
+                <h5 className="blog-title">{post.title}</h5>
+                <p className="text-muted small">By <strong>{post.author}</strong></p>
                 <div className="icons-row">
-                  <span className="text-muted">
-                    <FaHeart className="text-danger" /> {post.likes ?? 0}
-                  </span>
-                  <span className="text-muted">
-                    <FaEye className="text-primary" /> {post.views ?? 0}
-                  </span>
-                  <span className="text-muted">
-                    <FaComment className="text-success" /> {post.comment_count ?? 0}
-                  </span>
+                  <span className="text-muted"><FaHeart className="text-danger" /> {post.likes ?? 0}</span>
+                  <span className="text-muted"><FaEye className="text-primary" /> {post.views ?? 0}</span>
+                  <span className="text-muted"><FaComment className="text-success" /> {post.comment_count ?? 0}</span>
                 </div>
-
                 <div className="read-more-container">
-                  <button onClick={() => handleEditClick(post)} className="btn btn-warning mx-1">
-                    <FaEdit /> Edit
-                  </button>
-                  <button onClick={() => handleReadMore(post.slug)} className="purple-button mx-1">
-                    Read More
-                  </button>
-                  <button onClick={() => handleDelete(post.slug)} className="btn btn-danger">
-                    <FaTrash /> Delete
-                  </button>
+                  <button onClick={() => handleEditClick(post)} className="btn btn-warning mx-1"><FaEdit /> Edit</button>
+                  <button onClick={() => handleReadMore(post.slug)} className="purple-button mx-1">Read More</button>
+                  <button onClick={() => handleDelete(post.slug)} className="btn btn-danger"><FaTrash /> Delete</button>
                 </div>
               </div>
             </div>
@@ -174,46 +151,16 @@ const MyBlog = () => {
         )}
       </div>
 
-      {/* Edit Blog Modal */}
       {editPost && (
         <div className="edit-modal">
           <h4>Edit Blog</h4>
-          <input
-            type="text"
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            className="form-control mb-2"
-          />
-          <textarea
-            value={editDescription}
-            onChange={(e) => setEditDescription(e.target.value)}
-            className="form-control mb-2"
-          />
-          <button onClick={handleEditSubmit} className="btn btn-success">
-            Save Changes
-          </button>
-          <button onClick={() => setEditPost(null)} className="btn btn-secondary mx-2">
-            Cancel
-          </button>
+          <input type="text" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="form-control mb-2" />
+          <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="form-control mb-2" />
+          <input type="file" onChange={handleImageChange} className="form-control mb-2" />
+          <button onClick={handleEditSubmit} className="btn btn-success">Save Changes</button>
+          <button onClick={() => setEditPost(null)} className="btn btn-secondary mx-2">Cancel</button>
         </div>
       )}
-
-      {/* Pagination */}
-      <div className="text-center mt-4">
-        {prevPage && (
-          <button onClick={() => fetchPosts(prevPage)} className="btn btn-secondary mx-2">
-            Previous
-          </button>
-        )}
-        <span className="mx-3" style={{ color: "purple", fontWeight: "bold" }}>
-          Page {currentPage}
-        </span>
-        {nextPage && (
-          <button onClick={() => fetchPosts(nextPage)} className="btn btn-secondary mx-2">
-            Next
-          </button>
-        )}
-      </div>
     </div>
   );
 };
