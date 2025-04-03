@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { FaHeart, FaEye, FaComment } from "react-icons/fa"; // Import icons
+import { FaHeart, FaEye, FaComment } from "react-icons/fa"; // Icons
 import "./Blog.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -10,9 +10,10 @@ const Blog = () => {
   const [posts, setPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -32,7 +33,12 @@ const Blog = () => {
       setNextPage(response.data.next);
       setPrevPage(response.data.previous);
 
-      // Extract page number from "next" or "previous" URL
+      // ✅ Calculate total pages from API response
+      const totalItems = response.data.count;
+      const pageSize = response.data.results.length;
+      setTotalPages(Math.ceil(totalItems / pageSize));
+
+      // Extract page number from URL
       const urlParams = new URLSearchParams(new URL(url).search);
       setCurrentPage(parseInt(urlParams.get("page")) || 1);
     } catch (err) {
@@ -47,16 +53,22 @@ const Blog = () => {
 
   const handleSearchSubmit = () => {
     setSearch(searchQuery);
-    setCurrentPage(1); // Reset to first page on new search
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   const handleReadMore = async (slug) => {
     try {
       await axios.get(`${API_URL}api/blog/views/${slug}/`);
-      window.location.href = `/post/${slug}`; // Redirect after updating views
+      window.location.href = `/post/${slug}`; // Redirect after tracking views
     } catch (error) {
       console.error("Error updating views:", error);
-      window.location.href = `/post/${slug}`; // Still navigate even if API fails
+      window.location.href = `/post/${slug}`;
+    }
+  };
+
+  const handlePageClick = (page) => {
+    if (page !== currentPage) {
+      fetchPosts(`${API_URL}api/blog/?page=${page}`);
     }
   };
 
@@ -66,7 +78,7 @@ const Blog = () => {
 
       {error && <div className="alert alert-danger text-center">{error}</div>}
 
-      {/* Search Bar with Button */}
+      {/* Search Bar */}
       <div className="mb-4 d-flex justify-content-center">
         <div className="input-group w-50">
           <input
@@ -86,7 +98,11 @@ const Blog = () => {
       <div className="grid-container">
         {posts.length > 0 ? (
           posts.map((post) => (
-            <div key={post.slug} className="blog-card">
+            <div
+              key={post.slug}
+              className="blog-card"
+              onClick={() => handleReadMore(post.slug)} // Click anywhere opens post
+            >
               <img src={post.image} alt={post.title} className="blog-img" />
               <div className="blog-content">
                 <div className="blog-title-container">
@@ -98,7 +114,7 @@ const Blog = () => {
                   By <strong>{post.author}</strong>
                 </p>
 
-                {/* Icons Row - Fixed Position */}
+                {/* Icons Row */}
                 <div className="icons-row">
                   <span className="text-muted">
                     <FaHeart className="text-danger" /> 
@@ -111,12 +127,18 @@ const Blog = () => {
                   </span>
                 </div>
 
+                {/* Read More Button */}
                 <div className="read-more-container">
-                  <button onClick={() => handleReadMore(post.slug)} className="purple-button">
+                  <button
+                    className="purple-button"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent parent click
+                      handleReadMore(post.slug);
+                    }}
+                  >
                     Read More
                   </button>
                 </div>
-
               </div>
             </div>
           ))
@@ -126,25 +148,27 @@ const Blog = () => {
       </div>
 
       {/* Pagination */}
-      <div className="text-center mt-4">
+      <div className="pagination-container">
         {prevPage && (
-          <button
-            onClick={() => fetchPosts(prevPage)}
-            className="btn btn-secondary mx-2"
-          >
-            Previous
+          <button onClick={() => handlePageClick(currentPage - 1)} className="pagination-circle">
+            &laquo;
           </button>
         )}
 
-        {/* Show Current Page */}
-        <span className="mx-3" style={{ color: "purple", fontWeight: "bold" }}>Page {currentPage}</span>
+        {/* Show page numbers */}
+        {nextPage && Array.from({ length: totalPages}, (_, i) => i+1 ).map((page) => (
+          <button
+            key={page}
+            onClick={() => handlePageClick(page)}
+            className={`pagination-circle ${currentPage === page ? "active" : ""}`}
+          >
+            {page}
+          </button>
+        ))}
 
         {nextPage && (
-          <button
-            onClick={() => fetchPosts(nextPage)}
-            className="btn btn-secondary mx-2"
-          >
-            Next
+          <button onClick={() => handlePageClick(currentPage + 1)} className="pagination-circle">
+            &raquo;
           </button>
         )}
       </div>

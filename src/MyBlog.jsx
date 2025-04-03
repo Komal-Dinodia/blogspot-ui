@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Modal } from "bootstrap/dist/js/bootstrap.bundle.min";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FaHeart, FaEye, FaComment, FaEdit, FaTrash } from "react-icons/fa";
@@ -11,6 +12,7 @@ const MyBlog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [nextPage, setNextPage] = useState(null);
   const [prevPage, setPrevPage] = useState(null);
   const [error, setError] = useState(null);
@@ -39,14 +41,23 @@ const MyBlog = () => {
       setPosts(response.data.results);
       setNextPage(response.data.next);
       setPrevPage(response.data.previous);
+
+      const totalItems = response.data.count;
+      const pageSize = response.data.results.length;
+      setTotalPages(Math.ceil(totalItems / pageSize));
+
+      const urlParams = new URLSearchParams(new URL(url).search);
+      setCurrentPage(parseInt(urlParams.get("page")) || 1);
     } catch (err) {
       console.error("Error fetching posts:", err);
       setError("Failed to load blog posts. Please try again.");
     }
   };
 
-  const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
+  const handlePageClick = (page) => {
+    if (page !== currentPage) {
+      setCurrentPage(page);
+    }
   };
 
   const handleSearchChange = (e) => setSearchQuery(e.target.value);
@@ -69,36 +80,58 @@ const MyBlog = () => {
     setEditPost(post);
     setEditTitle(post.title);
     setEditDescription(post.description);
+    const modalElement = document.getElementById("editModal");
+    if (modalElement) {
+      const modal = new Modal(modalElement);
+      modal.show();
+    }
   };
 
   const handleImageChange = (e) => setEditImage(e.target.files[0]);
 
   const handleEditSubmit = async () => {
-    if (!editPost) return;
+  if (!editPost) return;
 
-    try {
-      const token = localStorage.getItem("access_token");
-      const formData = new FormData();
-      formData.append("title", editTitle);
-      formData.append("description", editDescription);
-      if (editImage) {
-        formData.append("image", editImage);
-      }
-
-      await axios.put(`${API_URL}blog/edit-delete/${editPost.slug}/`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
-      setEditPost(null);
-      fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
-    } catch (error) {
-      console.error("Error updating post:", error);
-      alert("Failed to update the blog post.");
+  try {
+    const token = localStorage.getItem("access_token");
+    const formData = new FormData();
+    formData.append("title", editTitle);
+    formData.append("description", editDescription);
+    if (editImage) {
+      formData.append("image", editImage);
     }
-  };
+
+    await axios.put(`${API_URL}blog/edit-delete/${editPost.slug}/`, formData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    // Show success message
+    alert("Blog post updated successfully!"); 
+
+    // Close the Bootstrap modal (if applicable)
+    const modalElement = document.getElementById("editModal");
+    if (modalElement) {
+      modalElement.classList.remove("show");
+      document.body.classList.remove("modal-open");
+      modalElement.style.display = "none";
+    }
+
+    // Reset the form fields
+    setEditTitle("");
+    setEditDescription("");
+    setEditImage(null);
+    setEditPost(null);
+
+    // Refresh the posts list
+    fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
+  } catch (error) {
+    console.error("Error updating post:", error);
+    alert("Failed to update the blog post.");
+  }
+};
 
   const handleDelete = async (slug) => {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
@@ -132,7 +165,7 @@ const MyBlog = () => {
       <div className="grid-container">
         {posts.length > 0 ? (
           posts.map((post) => (
-            <div key={post.slug} className="blog-card">
+            <div key={post.slug} className="blog-card" onClick={() => handleReadMore(post.slug)}>
               <img src={post.image} alt={post.title} className="blog-img" />
               <div className="blog-content">
                 <h5 className="blog-title">{post.title}</h5>
@@ -143,9 +176,11 @@ const MyBlog = () => {
                   <span className="text-muted"><FaComment className="text-success" /> {post.comment_count ?? 0}</span>
                 </div>
                 <div className="read-more-container">
-                  <button onClick={() => handleEditClick(post)} className="btn btn-warning mx-1"><FaEdit /> Edit</button>
-                  <button onClick={() => handleReadMore(post.slug)} className="purple-button mx-1">Read More</button>
-                  <button onClick={() => handleDelete(post.slug)} className="btn btn-danger"><FaTrash /> Delete</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleEditClick(post); }} className="btn btn-warning mx-1">
+                    <FaEdit /> Edit
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); handleReadMore(post.slug); }} className="purple-button mx-1">Read More</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(post.slug); }} className="btn btn-danger"><FaTrash /> Delete</button>
                 </div>
               </div>
             </div>
@@ -155,19 +190,35 @@ const MyBlog = () => {
         )}
       </div>
 
-      {/* Pagination Controls */}
-      <div className="text-center mt-4">
-        {prevPage && (
-          <button onClick={() => handlePageChange(currentPage - 1)} className="btn btn-secondary mx-2">
-            Previous
-          </button>
-        )}
-        <span className="mx-3" style={{ color: "purple", fontWeight: "bold" }}>Page {currentPage}</span>
-        {nextPage && (
-          <button onClick={() => handlePageChange(currentPage + 1)} className="btn btn-secondary mx-2">
-            Next
-          </button>
-        )}
+      {/* Pagination */}
+      <div className="pagination-container">
+        {prevPage && <button onClick={() => handlePageClick(currentPage - 1)} className="pagination-circle">&laquo;</button>}
+        {nextPage && Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+          <button key={page} onClick={() => handlePageClick(page)} className={`pagination-circle ${currentPage === page ? "active" : ""}`}>{page}</button>
+        ))}
+        {nextPage && <button onClick={() => handlePageClick(currentPage + 1)} className="pagination-circle">&raquo;</button>}
+      </div>
+
+      {/* Edit Modal */}
+      <div className="modal fade" id="editModal" tabIndex="-1" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Edit Blog Post</h5>
+              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div className="modal-body">
+              <input type="text" className="form-control mb-3" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+              <textarea className="form-control mb-3" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+              <input type="file" className="form-control" onChange={handleImageChange} />
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button type="button" className="btn btn-primary" onClick={handleEditSubmit}>Save Changes</button>
+
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   frontend:
     build: .
-    container_name: blogspot-ui-frontend
+    container_name: blogspot-komal-frontend
     ports:
       - "5003:5003"  # Map container's Vite dev server port to host
     volumes:
