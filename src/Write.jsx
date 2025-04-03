@@ -8,6 +8,7 @@ const Write = () => {
     title: "",
     description: "",
     image: null,
+    is_published: false, // New field
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -20,11 +21,7 @@ const Write = () => {
     }
 
     const style = document.createElement("style");
-    style.innerHTML = `
-      .cke_notification_warning {
-        display: none !important;
-      }
-    `;
+    style.innerHTML = `.cke_notification_warning { display: none !important; }`;
     document.head.appendChild(style);
 
     const script = document.createElement("script");
@@ -59,11 +56,11 @@ const Write = () => {
   }, [accessToken, navigate]);
 
   const handleChange = (e) => {
-    if (e.target.name === "image") {
-      setFormData({ ...formData, image: e.target.files[0] });
-    } else {
-      setFormData({ ...formData, [e.target.name]: e.target.value });
-    }
+    const { name, type, checked, value, files } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: type === "checkbox" ? checked : type === "file" ? files[0] : value,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -73,6 +70,8 @@ const Write = () => {
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     formDataToSend.append("description", formData.description);
+    formDataToSend.append("is_published", formData.is_published); // Add is_published field
+
     if (formData.image) {
       formDataToSend.append("image", formData.image);
     }
@@ -128,6 +127,17 @@ const Write = () => {
           <Form.Control type="file" name="image" onChange={handleChange} />
         </Form.Group>
 
+        {/* New Checkbox for is_published */}
+        <Form.Group className="mb-3">
+          <Form.Check
+            type="checkbox"
+            label="Publish this post"
+            name="is_published"
+            checked={formData.is_published}
+            onChange={handleChange}
+          />
+        </Form.Group>
+
         <Button variant="primary" type="submit" className="w-100 purple-button" disabled={loading}>
           {loading ? <Spinner as="span" animation="border" size="sm" /> : "Publish Post"}
         </Button>
@@ -137,4 +147,3 @@ const Write = () => {
 };
 
 export default Write;
-

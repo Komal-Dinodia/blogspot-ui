@@ -4,6 +4,7 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
+const REPLY_API_URL = "http://103.206.101.251:8003/api/comment/reply/";
 
 const BlogDetail = () => {
   const { slug } = useParams(); 
@@ -14,13 +15,56 @@ const BlogDetail = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [commentError, setCommentError] = useState(null);
+  const [replies, setReplies] = useState({});
+  const [newReply, setNewReply] = useState({});
+
 
   useEffect(() => {
     fetchPost();
     fetchComments();
     checkUser();
+    fetchReplies();
+    handleReplySubmit();
   }, [slug]);
 
+  const fetchReplies = async (commentId) => {
+    try {
+      const response = await axios.get(`${REPLY_API_URL}${commentId}/`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
+      setReplies((prevReplies) => ({
+        ...prevReplies,
+        [commentId]: response.data,
+      }));
+    } catch (err) {
+      console.error(`Error fetching replies for comment ${commentId}:`, err);
+    }
+  };
+  
+  const handleReplySubmit = async (e, commentId) => {
+    e.preventDefault();
+    if (!newReply[commentId]?.trim()) return;
+  
+    try {
+      await axios.post(
+        `${REPLY_API_URL}${commentId}/`,
+        { reply: newReply[commentId] },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+  
+      setNewReply((prevReplies) => ({ ...prevReplies, [commentId]: "" })); // Clear input
+      fetchReplies(commentId); // Refresh replies
+    } catch (err) {
+      console.error("Error posting reply:", err);
+    }
+  };
+  
   // Fetch blog post details
   const fetchPost = async () => {
     try {
@@ -148,38 +192,67 @@ const BlogDetail = () => {
         {/* Display Comments */}
         {comments.length > 0 ? (
           <ul className="list-group">
-            {comments.map((comment) => {
-              console.log("Comment User:", comment.user, "Logged-in User:", user?.username);
-
-              return (
-                <li key={comment.id} className="list-group-item d-flex justify-content-between align-items-center">
-                  <div>
-                    <strong>{comment.user}:</strong> {comment.comment}
-                    <br />
-                    <small className="text-muted">
-                      {new Date(comment.created_at).toLocaleString("en-IN", {
-                        timeZone: "Asia/Kolkata",
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                        second: "2-digit",
-                        hour12: true,
-                      })}
-                    </small>
-                  </div>
-
-                  {/* Show delete button only if the comment belongs to the logged-in user */}
-                  {user && comment.user === user.username && (
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment.id)}>
-                      🗑️ Delete
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+          {comments.map((comment) => (
+            <li key={comment.id} className="list-group-item">
+              <div>
+                <strong>{comment.user}:</strong> {comment.comment}
+                <br />
+                <small className="text-muted">
+                  {new Date(comment.created_at).toLocaleString()}
+                </small>
+              </div>
+        
+              {/* Show delete button for the comment owner */}
+              {user && comment.user === user.username && (
+                <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment.id)}>
+                  🗑️ Delete
+                </button>
+              )}
+        
+              {/* Replies Section */}
+              <button
+                className="btn btn-sm btn-link"
+                onClick={() => fetchReplies(comment.id)}
+              >
+                View Replies
+              </button>
+        
+              {replies[comment.id] && (
+                <ul className="list-group mt-2">
+                  {replies[comment.id].map((reply) => (
+                    <li key={reply.id} className="list-group-item">
+                      <strong>{reply.user}:</strong> {reply.reply}
+                      <br />
+                      <small className="text-muted">{new Date(reply.created_at).toLocaleString()}</small>
+                    </li>
+                  ))}
+                </ul>
+              )}
+        
+              {/* Reply Form */}
+              {user && (
+                <form onSubmit={(e) => handleReplySubmit(e, comment.id)} className="mt-2">
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Write a reply..."
+                    value={newReply[comment.id] || ""}
+                    onChange={(e) =>
+                      setNewReply((prevReplies) => ({
+                        ...prevReplies,
+                        [comment.id]: e.target.value,
+                      }))
+                    }
+                  />
+                  <button type="submit" className="btn btn-sm btn-primary mt-1">
+                    Reply
+                  </button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+        
         ) : (
           <p className="text-muted">No comments yet. Be the first to comment!</p>
         )}

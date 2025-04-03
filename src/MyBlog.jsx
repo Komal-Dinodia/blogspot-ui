@@ -20,6 +20,7 @@ const MyBlog = () => {
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [editImage, setEditImage] = useState(null);
+  const [editIsPublished, setEditIsPublished] = useState(false);
 
   useEffect(() => {
     fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
@@ -80,6 +81,7 @@ const MyBlog = () => {
     setEditPost(post);
     setEditTitle(post.title);
     setEditDescription(post.description);
+    setEditIsPublished(post.is_published || false);
     const modalElement = document.getElementById("editModal");
     if (modalElement) {
       const modal = new Modal(modalElement);
@@ -90,48 +92,48 @@ const MyBlog = () => {
   const handleImageChange = (e) => setEditImage(e.target.files[0]);
 
   const handleEditSubmit = async () => {
-  if (!editPost) return;
+    if (!editPost) return;
 
-  try {
-    const token = localStorage.getItem("access_token");
-    const formData = new FormData();
-    formData.append("title", editTitle);
-    formData.append("description", editDescription);
-    if (editImage) {
-      formData.append("image", editImage);
+    try {
+      const token = localStorage.getItem("access_token");
+      const formData = new FormData();
+      formData.append("title", editTitle);
+      formData.append("description", editDescription);
+      if (editImage) {
+        formData.append("image", editImage);
+      }
+
+      await axios.put(`${API_URL}blog/edit-delete/${editPost.slug}/`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      // Show success message
+      alert("Blog post updated successfully!");
+
+      // Close the Bootstrap modal (if applicable)
+      const modalElement = document.getElementById("editModal");
+      if (modalElement) {
+        modalElement.classList.remove("show");
+        document.body.classList.remove("modal-open");
+        modalElement.style.display = "none";
+      }
+
+      // Reset the form fields
+      setEditTitle("");
+      setEditDescription("");
+      setEditImage(null);
+      setEditPost(null);
+
+      // Refresh the posts list
+      fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
+    } catch (error) {
+      console.error("Error updating post:", error);
+      alert("Failed to update the blog post.");
     }
-
-    await axios.put(`${API_URL}blog/edit-delete/${editPost.slug}/`, formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "multipart/form-data",
-      },
-    });
-
-    // Show success message
-    alert("Blog post updated successfully!"); 
-
-    // Close the Bootstrap modal (if applicable)
-    const modalElement = document.getElementById("editModal");
-    if (modalElement) {
-      modalElement.classList.remove("show");
-      document.body.classList.remove("modal-open");
-      modalElement.style.display = "none";
-    }
-
-    // Reset the form fields
-    setEditTitle("");
-    setEditDescription("");
-    setEditImage(null);
-    setEditPost(null);
-
-    // Refresh the posts list
-    fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
-  } catch (error) {
-    console.error("Error updating post:", error);
-    alert("Failed to update the blog post.");
-  }
-};
+  };
 
   const handleDelete = async (slug) => {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
@@ -161,8 +163,23 @@ const MyBlog = () => {
           <button className="btn btn-primary purple-button" onClick={handleSearchSubmit}>Search</button>
         </div>
       </div>
-
+      <h4>Published Blogs</h4>
       <div className="grid-container">
+        {posts.filter(post => post.is_published).map((post) => (
+
+          <div key={post.slug} className="blog-card">
+
+            <h5>{post.title}</h5>
+
+            <button onClick={() => handleEditClick(post)} className="btn btn-warning mx-1">
+
+              <FaEdit /> Edit
+
+            </button>
+
+          </div>
+
+        ))}
         {posts.length > 0 ? (
           posts.map((post) => (
             <div key={post.slug} className="blog-card" onClick={() => handleReadMore(post.slug)}>
@@ -199,29 +216,53 @@ const MyBlog = () => {
         {nextPage && <button onClick={() => handlePageClick(currentPage + 1)} className="pagination-circle">&raquo;</button>}
       </div>
 
-      {/* Edit Modal */}
-      <div className="modal fade" id="editModal" tabIndex="-1" aria-hidden="true">
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">Edit Blog Post</h5>
-              <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div className="modal-body">
-              <input type="text" className="form-control mb-3" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
-              <textarea className="form-control mb-3" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
-              <input type="file" className="form-control" onChange={handleImageChange} />
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-              <button type="button" className="btn btn-primary" onClick={handleEditSubmit}>Save Changes</button>
+      {/* Unpublished Blogs */}
 
+      <h4 className="mt-4">Unpublished Blogs</h4>
+
+      <div className="grid-container">
+        {posts.filter(post => post.is_published).map((post) => (
+
+          <div key={post.slug} className="blog-card">
+
+            <h5>{post.title}</h5>
+
+            <button onClick={() => handleEditClick(post)} className="btn btn-warning mx-1">
+
+              <FaEdit /> Edit
+
+            </button>
+
+          </div>
+
+        ))}
+        {/* Edit Modal */}
+        < div className="modal fade" id="editModal" tabIndex="-1" aria-hidden="true" >
+          <div className="modal-dialog">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Edit Blog Post</h5>
+                <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div className="modal-body">
+                <input type="text" className="form-control mb-3" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+                <textarea className="form-control mb-3" value={editDescription} onChange={(e) => setEditDescription(e.target.value)} />
+                <input type="file" className="form-control mb-3" onChange={handleImageChange} />
+                <div className="form-check">
+                  <input type="checkbox" className="form-check-input" checked={editIsPublished} onChange={(e) => setEditIsPublished(e.target.checked)} />
+                  <label className="form-check-label">Publish</label>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" className="btn btn-primary" onClick={handleEditSubmit}>Save Changes</button>
+
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+    );
 };
-
 export default MyBlog;
