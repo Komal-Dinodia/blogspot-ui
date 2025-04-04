@@ -99,6 +99,7 @@ const MyBlog = () => {
       const formData = new FormData();
       formData.append("title", editTitle);
       formData.append("description", editDescription);
+      formData.append("is_published", editIsPublished);
       if (editImage) {
         formData.append("image", editImage);
       }
@@ -113,12 +114,15 @@ const MyBlog = () => {
       // Show success message
       alert("Blog post updated successfully!");
 
+
       // Close the Bootstrap modal (if applicable)
       const modalElement = document.getElementById("editModal");
+    
       if (modalElement) {
         modalElement.classList.remove("show");
         document.body.classList.remove("modal-open");
         modalElement.style.display = "none";
+
       }
 
       // Reset the form fields
@@ -129,6 +133,7 @@ const MyBlog = () => {
 
       // Refresh the posts list
       fetchPosts(`${API_URL}api/my/blog/?page=${currentPage}`);
+      setPosts([]);
     } catch (error) {
       console.error("Error updating post:", error);
       alert("Failed to update the blog post.");
@@ -163,23 +168,7 @@ const MyBlog = () => {
           <button className="btn btn-primary purple-button" onClick={handleSearchSubmit}>Search</button>
         </div>
       </div>
-      <h4>Published Blogs</h4>
       <div className="grid-container">
-        {posts.filter(post => post.is_published).map((post) => (
-
-          <div key={post.slug} className="blog-card">
-
-            <h5>{post.title}</h5>
-
-            <button onClick={() => handleEditClick(post)} className="btn btn-warning mx-1">
-
-              <FaEdit /> Edit
-
-            </button>
-
-          </div>
-
-        ))}
         {posts.length > 0 ? (
           posts.map((post) => (
             <div key={post.slug} className="blog-card" onClick={() => handleReadMore(post.slug)}>
@@ -187,6 +176,11 @@ const MyBlog = () => {
               <div className="blog-content">
                 <h5 className="blog-title">{post.title}</h5>
                 <p className="text-muted small">By <strong>{post.author}</strong></p>
+                <span className={`badge ${post.is_published ? "bg-success" : "bg-warning"}`}>
+
+                  {post.is_published ? "Published" : "Unpublished"}
+
+                </span>
                 <div className="icons-row">
                   <span className="text-muted"><FaHeart className="text-danger" /></span>
                   <span className="text-muted"><FaEye className="text-primary" /> {post.views ?? 0}</span>
@@ -216,26 +210,6 @@ const MyBlog = () => {
         {nextPage && <button onClick={() => handlePageClick(currentPage + 1)} className="pagination-circle">&raquo;</button>}
       </div>
 
-      {/* Unpublished Blogs */}
-
-      <h4 className="mt-4">Unpublished Blogs</h4>
-
-      <div className="grid-container">
-        {posts.filter(post => post.is_published).map((post) => (
-
-          <div key={post.slug} className="blog-card">
-
-            <h5>{post.title}</h5>
-
-            <button onClick={() => handleEditClick(post)} className="btn btn-warning mx-1">
-
-              <FaEdit /> Edit
-
-            </button>
-
-          </div>
-
-        ))}
         {/* Edit Modal */}
         < div className="modal fade" id="editModal" tabIndex="-1" aria-hidden="true" >
           <div className="modal-dialog">
@@ -262,7 +236,7 @@ const MyBlog = () => {
           </div>
         </div>
       </div>
-    </div>
-    );
+ 
+  );
 };
 export default MyBlog;

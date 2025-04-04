@@ -7,11 +7,11 @@ const API_URL = import.meta.env.VITE_API_URL;
 const REPLY_API_URL = "http://103.206.101.251:8003/api/comment/reply/";
 
 const BlogDetail = () => {
-  const { slug } = useParams(); 
+  const { slug } = useParams();
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [commentError, setCommentError] = useState(null);
@@ -42,11 +42,11 @@ const BlogDetail = () => {
       console.error(`Error fetching replies for comment ${commentId}:`, err);
     }
   };
-  
+
   const handleReplySubmit = async (e, commentId) => {
     e.preventDefault();
     if (!newReply[commentId]?.trim()) return;
-  
+
     try {
       await axios.post(
         `${REPLY_API_URL}${commentId}/`,
@@ -57,14 +57,14 @@ const BlogDetail = () => {
           },
         }
       );
-  
+
       setNewReply((prevReplies) => ({ ...prevReplies, [commentId]: "" })); // Clear input
       fetchReplies(commentId); // Refresh replies
     } catch (err) {
       console.error("Error posting reply:", err);
     }
   };
-  
+
   // Fetch blog post details
   const fetchPost = async () => {
     try {
@@ -153,112 +153,131 @@ const BlogDetail = () => {
   if (error) {
     return <div className="alert alert-danger text-center">{error}</div>;
   }
+  function CommentComponent({ comment, fetchReplies }) {
+    const [showReplies, setShowReplies] = useState(false);
 
-  return (
-    <div className="container my-5">
-      <h2 className="text-center mb-4">{post.title}</h2>
-      <img src={post.image} alt={post.title} className="w-100 mb-4 rounded" />
-      <p><strong>By {post.author}</strong></p>
+    const handleToggleReplies = () => {
+      if (!showReplies) {
+        fetchReplies(comment.id);
+      }
+      setShowReplies(!showReplies);
+    };
 
-      {/* Render HTML content safely */}
-      <div dangerouslySetInnerHTML={{ __html: post.description }} className="blog-content" />
+    return (
+      <div className="container my-5">
+        <h2 className="text-center mb-4">{post.title}</h2>
+        <img src={post.image} alt={post.title} className="w-100 mb-4 rounded" />
+        <p><strong>By {post.author}</strong></p>
 
-      <div className="d-flex justify-content-between mt-3">
-        <span className="text-muted"><strong>Views:</strong> {post.views}</span>
-        <span className="text-muted"><strong>Comments:</strong> {comments.length}</span>
+        {/* Render HTML content safely */}
+        <div dangerouslySetInnerHTML={{ __html: post.description }} className="blog-content" />
+
+        <div className="d-flex justify-content-between mt-3">
+          <span className="text-muted"><strong>Views:</strong> {post.views}</span>
+          <span className="text-muted"><strong>Comments:</strong> {comments.length}</span>
+        </div>
+
+        {/* Comment Section */}
+        <div className="mt-5">
+          <h4>Comments</h4>
+
+          {/* Comment Input for Logged-in Users */}
+          {user ? (
+            <form onSubmit={handleCommentSubmit} className="mb-4">
+              <textarea
+                className="form-control"
+                placeholder="Write a comment..."
+                rows="3"
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+              ></textarea>
+              {commentError && <div className="text-danger mt-2">{commentError}</div>}
+              <button type="submit" className="btn btn-primary mt-2 purple-button">Post Comment</button>
+            </form>
+          ) : (
+            <p className="text-muted">You must be logged in to post a comment.</p>
+          )}
+
+          {/* Display Comments */}
+          {comments.length > 0 ? (
+            <ul className="list-group">
+              {comments.map((comment) => (
+                <li key={comment.id} className="list-group-item">
+                  <div>
+                    <strong>{comment.user}:</strong> {comment.comment}
+                    <br />
+                    <small className="text-muted">
+                      {new Date(comment.created_at).toLocaleString()}
+                    </small>
+                  </div>
+
+                  {/* Show delete button for the comment owner */}
+                  {user && comment.user === user.username && (
+                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment.id)}>
+                      🗑️ Delete
+                    </button>
+                  )}
+
+                  {/* Replies Section */}
+                    <div>
+                      <button
+                        className="btn btn-sm"
+                        style={{ color: '#007BFF' }} // Change text color here
+                        onClick={handleToggleReplies}
+                      >
+                        {showReplies ? "Hide Replies" : "View Replies"}
+                      </button>
+
+                      {showReplies && (
+                        <div className="replies-container">
+                          {/* your replies rendering logic here */}
+                        </div>
+                      )}
+                    </div>
+
+                  {replies[comment.id] && (
+                    <ul className="list-group mt-2">
+                      {replies[comment.id].map((reply) => (
+                        <li key={reply.id} className="list-group-item">
+                          <strong>{reply.user}:</strong> {reply.reply}
+                          <br />
+                          <small className="text-muted">{new Date(reply.created_at).toLocaleString()}</small>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  {/* Reply Form */}
+                  {user && (
+                    <form onSubmit={(e) => handleReplySubmit(e, comment.id)} className="mt-2">
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Write a reply..."
+                        value={newReply[comment.id] || ""}
+                        onChange={(e) =>
+                          setNewReply((prevReplies) => ({
+                            ...prevReplies,
+                            [comment.id]: e.target.value,
+                          }))
+                        }
+                      />
+                      <button type="submit" className="btn btn-sm btn-primary mt-1">
+                        Reply
+                      </button>
+                    </form>
+                  )}
+                </li>
+              ))}
+            </ul>
+
+          ) : (
+            <p className="text-muted">No comments yet. Be the first to comment!</p>
+          )}
+        </div>
       </div>
-
-      {/* Comment Section */}
-      <div className="mt-5">
-        <h4>Comments</h4>
-
-        {/* Comment Input for Logged-in Users */}
-        {user ? (
-          <form onSubmit={handleCommentSubmit} className="mb-4">
-            <textarea
-              className="form-control"
-              placeholder="Write a comment..."
-              rows="3"
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-            ></textarea>
-            {commentError && <div className="text-danger mt-2">{commentError}</div>}
-            <button type="submit" className="btn btn-primary mt-2 purple-button">Post Comment</button>
-          </form>
-        ) : (
-          <p className="text-muted">You must be logged in to post a comment.</p>
-        )}
-
-        {/* Display Comments */}
-        {comments.length > 0 ? (
-          <ul className="list-group">
-          {comments.map((comment) => (
-            <li key={comment.id} className="list-group-item">
-              <div>
-                <strong>{comment.user}:</strong> {comment.comment}
-                <br />
-                <small className="text-muted">
-                  {new Date(comment.created_at).toLocaleString()}
-                </small>
-              </div>
-        
-              {/* Show delete button for the comment owner */}
-              {user && comment.user === user.username && (
-                <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment.id)}>
-                  🗑️ Delete
-                </button>
-              )}
-        
-              {/* Replies Section */}
-              <button
-                className="btn btn-sm btn-link"
-                onClick={() => fetchReplies(comment.id)}
-              >
-                View Replies
-              </button>
-        
-              {replies[comment.id] && (
-                <ul className="list-group mt-2">
-                  {replies[comment.id].map((reply) => (
-                    <li key={reply.id} className="list-group-item">
-                      <strong>{reply.user}:</strong> {reply.reply}
-                      <br />
-                      <small className="text-muted">{new Date(reply.created_at).toLocaleString()}</small>
-                    </li>
-                  ))}
-                </ul>
-              )}
-        
-              {/* Reply Form */}
-              {user && (
-                <form onSubmit={(e) => handleReplySubmit(e, comment.id)} className="mt-2">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Write a reply..."
-                    value={newReply[comment.id] || ""}
-                    onChange={(e) =>
-                      setNewReply((prevReplies) => ({
-                        ...prevReplies,
-                        [comment.id]: e.target.value,
-                      }))
-                    }
-                  />
-                  <button type="submit" className="btn btn-sm btn-primary mt-1">
-                    Reply
-                  </button>
-                </form>
-              )}
-            </li>
-          ))}
-        </ul>
-        
-        ) : (
-          <p className="text-muted">No comments yet. Be the first to comment!</p>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default BlogDetail;
+    );
+  };
+}
+  export default BlogDetail;
+ 
