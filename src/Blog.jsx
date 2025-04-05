@@ -74,7 +74,13 @@ const Blog = () => {
 
   return (
     <div className="blog-container">
-      <h2 className="text-center my-4">Welcome to BlogSpot</h2>
+      <div className="text-center mb-4" style={{marginTop: '15px'}}>
+        <h2 className="mb-3">Welcome to BlogSpot</h2>
+        <p className="text-muted" style={{fontSize: '1.1rem', margin: '0 auto', lineHeight: '1.6'}}>
+          Welcome to our vibrant community of writers and readers! Share your stories, discover new perspectives, and engage with fellow bloggers. Join us in creating meaningful conversations and inspiring content that matters.
+        </p>
+        <hr style={{margin: '25px auto', backgroundColor: '#000000'}} />
+      </div>
 
       {error && <div className="alert alert-danger text-center">{error}</div>}
 

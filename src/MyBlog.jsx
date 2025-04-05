@@ -158,7 +158,13 @@ const MyBlog = () => {
 
   return (
     <div className="blog-container">
-      <h2 className="text-center my-4">My Blogs</h2>
+      <div className="text-center mb-4" style={{marginTop: '15px'}}>
+        <h2 className="mb-3">My Blogs</h2>
+        <p className="text-muted" style={{fontSize: '1.1rem', margin: '0 auto', lineHeight: '1.6'}}>
+          Welcome to your personal blogging space! Here you can manage your posts, track engagement, and refine your writing. Keep your content organized and watch your blog portfolio grow as you share your unique voice.
+        </p>
+        <hr style={{margin: '25px auto', border: '1px solid #000000'}} />
+      </div>
 
       {error && <div className="alert alert-danger text-center">{error}</div>}
 

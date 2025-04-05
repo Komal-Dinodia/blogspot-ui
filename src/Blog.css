@@ -1,13 +1,13 @@
 .blog-container {
   max-width: 1200px;
   margin: auto;
-  padding: 20px;
+  padding: 10px 20px;
 }
 
 /* 3-column grid layout */
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 20px;
   justify-content: center;
 }
