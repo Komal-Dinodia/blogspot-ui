@@ -145,3 +145,9 @@
   color: white;
   border: 2px solid darkviolet;
 }
+
+.custom-option-link{
+  color: purple;
+  margin-right: 5px;
+  margin-left: 5px;
+}
