@@ -157,7 +157,7 @@ const BlogDetail = () => {
                         setNewReply((prev) => ({ ...prev, [reply.id]: e.target.value }))
                       }
                     />
-                    <button type="submit" className="btn btn-sm btn-primary mt-1">Submit</button>
+                    <button type="submit" className="purple-button mt-1" style={{padding: '4px 8px', fontSize: '0.875rem'}}>Submit</button>
                   </form>
                 )}
               </>
@@ -216,7 +216,7 @@ const BlogDetail = () => {
                     setNewReply((prev) => ({ ...prev, [comment.id]: e.target.value }))
                   }
                 />
-                <button type="submit" className="btn btn-sm btn-primary mt-1">Submit</button>
+                <button type="submit" className="purple-button mt-1">Post Reply</button>
               </form>
             )}
           </>
@@ -265,7 +265,7 @@ const BlogDetail = () => {
               onChange={(e) => setNewComment(e.target.value)}
             ></textarea>
             {commentError && <div className="text-danger mt-2">{commentError}</div>}
-            <button type="submit" className="btn btn-primary mt-2">Post Comment</button>
+            <button type="submit" className="purple-button mt-2">Post Comment</button>
           </form>
         ) : (
           <p className="text-muted">You must be logged in to post a comment.</p>

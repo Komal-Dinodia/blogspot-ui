@@ -14,10 +14,10 @@ const Home = () => {
     <div className="container text-center">
       <h1>Welcome to BlogSpot</h1>
       <p>Write and share your thoughts with the world!</p>
-      <button className="btn btn-primary" onClick={() => navigate("/write")}>
+      <button className="purple-button me-3" onClick={() => navigate("/write")}>
         Write a Post
       </button>
-      <button className="btn btn-danger ms-3" onClick={handleLogout}>
+      <button className="purple-button" onClick={handleLogout}>
         Logout
       </button>
     </div>

@@ -1,10 +1,11 @@
 body {
-  background-color: #f8f9fa; /* Light gray background */
+  background-color: #ffffff;
+  color: #000000;
 }
 
 h1 {
-  font-weight: bold;
-  color: #343a40;
+  font-weight: 500;
+  color: #000000;
 }
 
 .card {
@@ -24,7 +25,7 @@ html, body {
 }
 
 .custom-navbar {
-  background-color: #782499 !important; /* Change navbar color */
+  background-color: #000000 !important;
   padding: 10px 0;
 }
 
@@ -32,14 +33,14 @@ html, body {
   border-radius: 50%; /* Make logo rounded */
 }
 
-.navbar-nav .nav-link, .btn {
-  color: white !important;
-  font-weight: bold;
+.navbar-nav .nav-link, .navbar .btn {
+  color: #ffffff !important;
+  font-weight: 500;
   border: none !important;
 }
 
-.navbar-nav .nav-link:hover, .btn:hover {
-  color: #ffcc00 !important; /* Change color on hover */
+.navbar-nav .nav-link:hover, .navbar .btn:hover {
+  color: rgba(255,255,255,0.8) !important;
 }
 
 span {
@@ -70,6 +71,7 @@ span {
   }
 }
 .custom-btn {
-  background-color: #f1ce06e5; 
-  color: white; 
+  background-color: #000000;
+  color: white;
+  border-radius: 4px;
 }

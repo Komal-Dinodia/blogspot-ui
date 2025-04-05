@@ -138,8 +138,8 @@ const Write = () => {
           />
         </Form.Group>
 
-        <Button variant="primary" type="submit" className="w-100 purple-button" disabled={loading}>
-          {loading ? <Spinner as="span" animation="border" size="sm" /> : "Publish Post"}
+        <Button type="submit" className="w-100 purple-button" disabled={loading}>
+          {loading ? <Spinner as="span" animation="border" size="sm" /> : "Save"}
         </Button>
       </Form>
     </Container>

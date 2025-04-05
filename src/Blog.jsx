@@ -88,7 +88,7 @@ const Blog = () => {
             onChange={handleSearchChange}
             className="form-control"
           />
-          <button className="btn btn-primary purple-button" onClick={handleSearchSubmit}>
+          <button className="purple-button" onClick={handleSearchSubmit}>
             Search
           </button>
         </div>

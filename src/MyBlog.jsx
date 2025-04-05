@@ -165,7 +165,7 @@ const MyBlog = () => {
       <div className="mb-4 d-flex justify-content-center">
         <div className="input-group w-50">
           <input type="text" placeholder="Search by title..." value={searchQuery} onChange={handleSearchChange} className="form-control" />
-          <button className="btn btn-primary purple-button" onClick={handleSearchSubmit}>Search</button>
+          <button className="purple-button" onClick={handleSearchSubmit}>Search</button>
         </div>
       </div>
       <div className="grid-container">
@@ -187,11 +187,11 @@ const MyBlog = () => {
                   <span className="text-muted"><FaComment className="text-success" /> {post.comment_count ?? 0}</span>
                 </div>
                 <div className="read-more-container">
-                  <button onClick={(e) => { e.stopPropagation(); handleEditClick(post); }} className="btn btn-warning mx-1">
-                    <FaEdit /> Edit
+                  <button onClick={(e) => { e.stopPropagation(); handleEditClick(post); }} className="purple-button m-1">
+                    <FaEdit />
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); handleReadMore(post.slug); }} className="purple-button mx-1">Read More</button>
-                  <button onClick={(e) => { e.stopPropagation(); handleDelete(post.slug); }} className="btn btn-danger"><FaTrash /> Delete</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleReadMore(post.slug); }} className="purple-button m-1">Read More</button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(post.slug); }} className="purple-button m-1"><FaTrash /> </button>
                 </div>
               </div>
             </div>
@@ -228,8 +228,8 @@ const MyBlog = () => {
                 </div>
               </div>
               <div className="modal-footer">
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" className="btn btn-primary" onClick={handleEditSubmit}>Save Changes</button>
+                <button type="button" className="purple-button me-2" style={{backgroundColor: 'white', color: 'black'}} data-bs-dismiss="modal">Cancel</button>
+                <button type="button" className="purple-button" onClick={handleEditSubmit}>Save Changes</button>
 
               </div>
             </div>
