@@ -4,7 +4,6 @@ import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 const API_URL = import.meta.env.VITE_API_URL;
-const REPLY_API_URL = `${API_URL}api/comment/reply/`;
 
 const BlogDetail = () => {
   const { slug } = useParams();
@@ -15,8 +14,9 @@ const BlogDetail = () => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
   const [commentError, setCommentError] = useState(null);
-  const [replies, setReplies] = useState({});
   const [newReply, setNewReply] = useState({});
+  const [showReplies, setShowReplies] = useState({});
+  const [showReplyInput, setShowReplyInput] = useState({});
 
   useEffect(() => {
     fetchPost();
@@ -47,22 +47,6 @@ const BlogDetail = () => {
     } catch (err) {
       console.error("Error fetching comments:", err);
       setComments([]);
-    }
-  };
-
-  const fetchReplies = async (commentId) => {
-    try {
-      const response = await axios.get(`${REPLY_API_URL}${commentId}/`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      });
-      setReplies((prevReplies) => ({
-        ...prevReplies,
-        [commentId]: response.data,
-      }));
-    } catch (err) {
-      console.error(`Error fetching replies for comment ${commentId}:`, err);
     }
   };
 
@@ -117,8 +101,8 @@ const BlogDetail = () => {
 
     try {
       await axios.post(
-        `${REPLY_API_URL}${commentId}/`,
-        { reply: newReply[commentId] },
+        `${API_URL}api/comment/reply/${commentId}/`,
+        { comment: newReply[commentId] },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -126,22 +110,76 @@ const BlogDetail = () => {
         }
       );
       setNewReply((prev) => ({ ...prev, [commentId]: "" }));
-      fetchReplies(commentId);
+      fetchComments();
     } catch (err) {
       console.error("Error posting reply:", err);
     }
   };
 
+  const toggleReplies = (id) => {
+    setShowReplies((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const toggleReplyInput = (id) => {
+    setShowReplyInput((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const renderReplies = (replies, level = 1) => {
+    if (!replies || replies.length === 0) return null;
+
+    return (
+      <ul className="list-group mt-2" style={{ marginLeft: `${level * 20}px` }}>
+        {replies.map((reply) => (
+          <li key={reply.id} className="list-group-item">
+            <strong>{reply.user}:</strong> {reply.comment}
+            <br />
+            <small className="text-muted">
+              {new Date(reply.created_at).toLocaleString()}
+            </small>
+
+            {user && (
+              <>
+                <a
+                  onClick={() => toggleReplyInput(reply.id)}
+                  className="custom-option-link"
+                >
+                  Reply
+                </a>
+
+                {showReplyInput[reply.id] && (
+                  <form onSubmit={(e) => handleReplySubmit(e, reply.id)} className="mt-2">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Write a reply..."
+                      value={newReply[reply.id] || ""}
+                      onChange={(e) =>
+                        setNewReply((prev) => ({ ...prev, [reply.id]: e.target.value }))
+                      }
+                    />
+                    <button type="submit" className="btn btn-sm btn-primary mt-1">Submit</button>
+                  </form>
+                )}
+              </>
+            )}
+
+            {reply.replies && reply.replies.length > 0 && (
+              <a
+                className="custom-option-link"
+                onClick={() => toggleReplies(reply.id)}
+              >
+                {showReplies[reply.id] ? "Hide Replies" : "View Replies"} ({reply.replies.length})
+              </a>
+            )}
+
+            {showReplies[reply.id] && renderReplies(reply.replies, level + 1)}
+          </li>
+        ))}
+      </ul>
+    );
+  };
+
   const CommentComponent = ({ comment }) => {
-    const [showReplies, setShowReplies] = useState(false);
-
-    const handleToggleReplies = () => {
-      if (!showReplies) {
-        fetchReplies(comment.id);
-      }
-      setShowReplies(!showReplies);
-    };
-
     return (
       <li className="list-group-item">
         <div>
@@ -153,49 +191,47 @@ const BlogDetail = () => {
         </div>
 
         {user && comment.user === user.username && (
-          <button className="btn btn-sm btn-danger" onClick={() => handleDeleteComment(comment.id)}>
-            🗑️ Delete
-          </button>
-        )}
-
-        <div>
-          <button
-            className="btn btn-sm"
-            style={{ color: '#007BFF' }}
-            onClick={handleToggleReplies}
-          >
-            {showReplies ? "Hide Replies" : "View Replies"}
-          </button>
-        </div>
-
-        {showReplies && replies[comment.id] && (
-          <ul className="list-group mt-2">
-            {replies[comment.id].map((reply) => (
-              <li key={reply.id} className="list-group-item">
-                <strong>{reply.user}:</strong> {reply.reply}
-                <br />
-                <small className="text-muted">
-                  {new Date(reply.created_at).toLocaleString()}
-                </small>
-              </li>
-            ))}
-          </ul>
+          <a className="custom-option-link" onClick={() => handleDeleteComment(comment.id)}>
+          Delete
+        </a>
         )}
 
         {user && (
-          <form onSubmit={(e) => handleReplySubmit(e, comment.id)} className="mt-2">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Write a reply..."
-              value={newReply[comment.id] || ""}
-              onChange={(e) =>
-                setNewReply((prev) => ({ ...prev, [comment.id]: e.target.value }))
-              }
-            />
-            <button type="submit" className="btn btn-sm btn-primary mt-1">Reply</button>
-          </form>
+          <>
+            <a
+              className="custom-option-link"
+              onClick={() => toggleReplyInput(comment.id)}
+            >
+              Reply
+            </a>
+
+            {showReplyInput[comment.id] && (
+              <form onSubmit={(e) => handleReplySubmit(e, comment.id)} className="mt-2">
+                <input
+                  type="text"
+                  className="form-control"
+                  placeholder="Write a reply..."
+                  value={newReply[comment.id] || ""}
+                  onChange={(e) =>
+                    setNewReply((prev) => ({ ...prev, [comment.id]: e.target.value }))
+                  }
+                />
+                <button type="submit" className="btn btn-sm btn-primary mt-1">Submit</button>
+              </form>
+            )}
+          </>
         )}
+
+        {comment.replies && comment.replies.length > 0 && (
+          <a
+            className="custom-option-link"
+            onClick={() => toggleReplies(comment.id)}
+          >
+            {showReplies[comment.id] ? "Hide Replies" : "View Replies"} ({comment.replies.length})
+          </a>
+        )}
+
+        {showReplies[comment.id] && renderReplies(comment.replies)}
       </li>
     );
   };
@@ -229,7 +265,7 @@ const BlogDetail = () => {
               onChange={(e) => setNewComment(e.target.value)}
             ></textarea>
             {commentError && <div className="text-danger mt-2">{commentError}</div>}
-            <button type="submit" className="btn btn-primary mt-2 purple-button">Post Comment</button>
+            <button type="submit" className="btn btn-primary mt-2">Post Comment</button>
           </form>
         ) : (
           <p className="text-muted">You must be logged in to post a comment.</p>
